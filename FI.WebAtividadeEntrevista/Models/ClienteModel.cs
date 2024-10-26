@@ -67,5 +67,11 @@ namespace WebAtividadeEntrevista.Models
         /// </summary>
         public string Telefone { get; set; }
 
+
+        [Required(ErrorMessage = "CPF é obrigatório")]
+        [StringLength(14, ErrorMessage = "CPF deve ter 14 caracteres")]
+        [RegularExpression(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", ErrorMessage = "CPF inválido")]
+        public string CPF { get; set; }
+
     }    
 }

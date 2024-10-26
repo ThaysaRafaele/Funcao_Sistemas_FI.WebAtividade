@@ -1,7 +1,18 @@
 ﻿
 $(document).ready(function () {
+
+    $('#CPF').mask('999.999.999-99');
+
+
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
+
+        var cpf = $('#CPF').val().replace(/[^\d]/g, '');
+        if (!validaCPF(cpf)) {
+            ModalDialog("Erro", "CPF inválido");
+            return false;
+        }
+
         $.ajax({
             url: urlPost,
             method: "POST",
@@ -14,7 +25,8 @@ $(document).ready(function () {
                 "Estado": $(this).find("#Estado").val(),
                 "Cidade": $(this).find("#Cidade").val(),
                 "Logradouro": $(this).find("#Logradouro").val(),
-                "Telefone": $(this).find("#Telefone").val()
+                "Telefone": $(this).find("#Telefone").val(),
+                "CPF": $(this).find("#CPF").val()
             },
             error:
             function (r) {
@@ -30,7 +42,35 @@ $(document).ready(function () {
             }
         });
     })
-    
+
+    function validaCPF(cpf) {
+        if (cpf.length != 11)
+            return false;
+
+        var soma = 0;
+        var resto;
+
+        if (cpf == "00000000000") return false;
+
+        for (var i = 1; i <= 9; i++)
+            soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+
+        resto = (soma * 10) % 11;
+
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(9, 10))) return false;
+
+        soma = 0;
+        for (var i = 1; i <= 10; i++)
+            soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+
+        resto = (soma * 10) % 11;
+
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(10, 11))) return false;
+
+        return true;
+    }
 })
 
 function ModalDialog(titulo, texto) {
