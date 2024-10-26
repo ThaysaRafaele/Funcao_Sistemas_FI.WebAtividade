@@ -7,10 +7,17 @@
     @CIDADE        VARCHAR (50) ,
     @LOGRADOURO    VARCHAR (500),
     @EMAIL         VARCHAR (2079),
-    @TELEFONE      VARCHAR (15),
+    @TELEFONE      VARCHAR (15),	
+    @CPF           VARCHAR (14),
 	@Id           BIGINT
 AS
 BEGIN
+	IF EXISTS (SELECT 1 FROM CLIENTES WHERE CPF = @CPF)
+    BEGIN
+        RAISERROR('CPF já cadastrado', 16, 1)
+        RETURN
+    END
+
 	UPDATE CLIENTES 
 	SET 
 		NOME = @NOME, 
@@ -21,6 +28,7 @@ BEGIN
 		CIDADE = @CIDADE, 
 		LOGRADOURO = @LOGRADOURO, 
 		EMAIL = @EMAIL, 
-		TELEFONE = @TELEFONE
+		TELEFONE = @TELEFONE,
+		CPF = @CPF
 	WHERE Id = @Id
 END
