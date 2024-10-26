@@ -71,6 +71,87 @@ $(document).ready(function () {
 
         return true;
     }
+
+    // Gerenciando beneficiários
+    $('#modalBeneficiarios').on('show.bs.modal', function () {
+        carregarBeneficiarios();
+    });
+
+    $('#formBeneficiarios').submit(function (e) {
+        e.preventDefault();
+
+        var cpf = $('#BeneficiarioCPF').val().replace(/[^\d]/g, '');
+        var nome = $('#BeneficiarioNome').val();
+
+        if (!validaCPF(cpf)) {
+            ModalDialog("Erro", "CPF do beneficiário é inválido");
+            return false;
+        }
+
+        $.ajax({
+            url: '/Beneficiarios/Incluir', // Ajustar depois que eu montar controller
+            method: "POST",
+            data: {
+                "CPF": cpf,
+                "Nome": nome,
+                "IdCliente": idCliente // Substituir com o ID do cliente
+            },
+            success: function (response) {
+                carregarBeneficiarios();
+                $('#formBeneficiarios')[0].reset();
+                ModalDialog("Sucesso!", response);
+            },
+            error: function (r) {
+                ModalDialog("Erro", r.responseJSON || "Ocorreu um erro ao incluir o beneficiário.");
+            }
+        });
+    });
+
+    function carregarBeneficiarios() {
+        $.ajax({
+            url: '/Beneficiarios/Listar/' + idCliente, // Ajustar depois que eu montar controller
+            method: "GET",
+            success: function (beneficiarios) {
+                var tabela = $('#tabelaBeneficiarios');
+                tabela.empty();
+
+                beneficiarios.forEach(function (beneficiario) {
+                    tabela.append('<tr>' +
+                        '<td>' + beneficiario.CPF + '</td>' +
+                        '<td>' + beneficiario.Nome + '</td>' +
+                        '<td>' +
+                        '<button class="btn btn-warning btn-sm" onclick="alterarBeneficiario(' + beneficiario.ID + ')">Alterar</button>' +
+                        '<button class="btn btn-danger btn-sm" onclick="excluirBeneficiario(' + beneficiario.ID + ')">Excluir</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            },
+            error: function () {
+                ModalDialog("Erro", "Ocorreu um erro ao carregar os beneficiários.");
+            }
+        });
+    }
+
+    function alterarBeneficiario(id) {
+        // Ajustar a lógica para alterar o beneficiário aqui
+       
+    }
+
+    function excluirBeneficiario(id) {
+        $.ajax({
+            url: '/Beneficiarios/Excluir', //Ajustar depois que eu montar controller
+            method: "POST",
+            data: { "id": id },
+            success: function () {
+                carregarBeneficiarios();
+                ModalDialog("Sucesso", "Beneficiário excluído com sucesso.");
+            },
+            error: function () {
+                ModalDialog("Erro", "Ocorreu um erro ao excluir o beneficiário.");
+            }
+        });
+    }
+
 })
 
 function ModalDialog(titulo, texto) {
