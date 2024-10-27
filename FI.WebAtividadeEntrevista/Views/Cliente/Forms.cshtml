@@ -15,7 +15,7 @@
             </div>
         </div>
     </div>
-    <div class="row">        
+    <div class="row">
         <div class="col-md-6">
             <div class="form-group">
                 <label for="CPF">CPF:</label>
@@ -83,6 +83,9 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="pull-right">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalBeneficiarios">
+                    Beneficiários
+                </button>
                 <button type="submit" class="btn btn-sm btn-success">Salvar</button>
                 @Html.ActionLink("Voltar", "Index", "Cliente", new { }, new { @class = "btn btn-sm btn-danger" })
             </div>
@@ -91,3 +94,58 @@
 
 
 </form>
+
+<!-- Modal Beneficiários-->
+<div class="modal fade" id="modalBeneficiarios" tabindex="-1" role="dialog" aria-labelledby="modalBeneficiariosLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBeneficiariosLabel">Beneficiários</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formBeneficiarios">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="BeneficiarioCPF">CPF:</label>
+                                <input type="text" class="form-control" id="BeneficiarioCPF" placeholder="Ex.: 999.999.999-99" maxlength="14" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="BeneficiarioNome">Nome do Beneficiário:</label>
+                                <input type="text" class="form-control" id="BeneficiarioNome" placeholder="Ex.: Maria" maxlength="255" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success">Incluir</button>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>CPF</th>
+                            <th>Nome</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBeneficiarios"> </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#modalBeneficiarios').on('show.bs.modal', function () {
+            $('#BeneficiarioCPF').mask('999.999.999-99'); 
+        });
+    });
+</script>
