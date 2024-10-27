@@ -85,27 +85,31 @@ namespace WebAtividadeEntrevista.Controllers
                 return Json("Beneficiário alterado com sucesso");
             }
         }
-                
+
         [HttpGet]
-        public ActionResult Alterar(long id)
+        public JsonResult Alterar(long id)
         {
             BoBeneficiario bo = new BoBeneficiario();
             Beneficiario beneficiario = bo.Consultar(id);
-            BeneficiarioModel model = null;
 
             if (beneficiario != null)
             {
-                model = new BeneficiarioModel()
+                var model = new BeneficiarioModel()
                 {
                     ID = beneficiario.Id,
                     CPF = beneficiario.CPF,
                     Nome = beneficiario.Nome,
                     IdCliente = beneficiario.IdCliente
                 };
+                return Json(model, JsonRequestBehavior.AllowGet);
             }
-
-            return View(model);
+            else
+            {
+                Response.StatusCode = 404;
+                return Json("Beneficiário não encontrado", JsonRequestBehavior.AllowGet);
+            }
         }
+
 
         [HttpPost]
         public JsonResult Excluir(long id)

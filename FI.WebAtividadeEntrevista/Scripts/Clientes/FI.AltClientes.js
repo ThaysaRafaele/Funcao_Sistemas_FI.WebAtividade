@@ -54,15 +54,18 @@ $(document).ready(function () {
     $('#formBeneficiarios').submit(function (e) {
         e.preventDefault();
 
-
+        const idBeneficiario = $('#BeneficiarioID').val();
         const dadosBeneficiario = {
+            "ID": idBeneficiario,
             "CPF": $(this).find("#BeneficiarioCPF").val(),
             "Nome": $(this).find("#BeneficiarioNome").val(),
-            "IdCliente": obj.Id 
+            "IdCliente": obj.Id
         };
 
+        const url = idBeneficiario ? urlAlterarBeneficiario : urlIncluirBeneficiario;
+
         $.ajax({
-            url: urlIncluirBeneficiario,
+            url: url,
             method: "POST",
             data: dadosBeneficiario,
             error: function (r) {
@@ -72,14 +75,88 @@ $(document).ready(function () {
                     ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
             },
             success: function (r) {
-                carregarBeneficiarios(obj.Id);
+                carregarBeneficiarios(obj.Id); 
                 $('#formBeneficiarios')[0].reset();
-                ModalDialog("Sucesso!", response);
+                $('#BeneficiarioID').val(""); 
+                $('#btnSalvarBeneficiario').text("Incluir"); 
+                ModalDialog("Sucesso!", r);
             }
         });
     });
 
+
 })
+
+function editarBeneficiario(id) {
+    $.ajax({
+        url: urlAlterarBeneficiario,
+        method: "GET",
+        data: { id: id },
+        dataType: "json",
+        success: function (data) {
+            if (data) {
+                $('#BeneficiarioID').val(data.ID);
+                $('#BeneficiarioCPF').val(data.CPF);
+                $('#BeneficiarioNome').val(data.Nome);
+
+                $('#btnSalvarBeneficiario').text("Alterar");
+                $('#formBeneficiarios').data("action-url", urlAlterarBeneficiario);
+
+                $('#modalBeneficiarios').modal('show');
+            } else {
+                ModalDialog("Erro", "Beneficiário não encontrado.");
+            }
+        },
+        error: function (xhr, status, error) {
+            ModalDialog("Erro", "Ocorreu um erro ao carregar os dados do beneficiário: " + error);
+        }
+    });
+}
+
+
+$('#modalBeneficiarios').on('show.bs.modal', function () {
+    // Verifica se está incluindo ou editando um beneficiário
+    const idBeneficiario = $('#BeneficiarioID').val();
+
+    if (idBeneficiario) {
+        $('#btnSalvarBeneficiario').text("Alterar");
+    } else {
+        $('#btnSalvarBeneficiario').text("Incluir");
+    }
+});
+
+
+
+$('#modalBeneficiarios').on('hidden.bs.modal', function () {
+    $('#BeneficiarioID').val("");
+    $('#BeneficiarioCPF').val("");
+    $('#BeneficiarioNome').val("");
+    $('#btnSalvarBeneficiario').text("Incluir");
+});
+
+
+
+
+function excluirBeneficiario(id) {
+    if (confirm("Deseja realmente excluir este beneficiário?")) {
+        $.ajax({
+            url: urlExcluirBeneficiario,
+            method: "POST",
+            data: { id: id },
+            error: function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+            success: function (r) {
+                carregarBeneficiarios(obj.Id);
+                ModalDialog("Sucesso!", r);
+            }
+        });
+    }
+}
+
 
 function carregarBeneficiarios(idCliente) {
     $.ajax({
@@ -110,7 +187,7 @@ function preencherTabelaBeneficiarios(beneficiarios) {
         tr.append($('<td>').text(beneficiario.Nome));
         tr.append($('<td>').html(
             '<button class="btn btn-sm btn-danger" onclick="excluirBeneficiario(' + beneficiario.Id + ')">Excluir</button> ' +
-            '<button class="btn btn-sm btn-primary" onclick="editarBeneficiario(' + beneficiario.Id + ')">Editar</button>'
+            '<button class="btn btn-sm btn-primary" onclick="editarBeneficiario(' + beneficiario.Id + ')">Alterar</button>'
         ));
         tbody.append(tr);
     });
