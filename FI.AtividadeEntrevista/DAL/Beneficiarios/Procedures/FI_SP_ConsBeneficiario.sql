@@ -1,5 +1,5 @@
-﻿CREATE PROCEDURE [dbo].[Beneficiario_ListarPorCliente]
-    @IdCliente BIGINT
+﻿CREATE PROCEDURE Beneficiario_Consultar
+    @ID BIGINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -10,7 +10,7 @@ BEGIN
         CPF,
         IDCLIENTE
     FROM 
-        BENEFICIARIOS 
+        BENEFICIARIOS
     WHERE 
-        IDCLIENTE = @IdCliente
+        ID = @ID
 END
