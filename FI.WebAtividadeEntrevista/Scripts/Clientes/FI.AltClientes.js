@@ -81,6 +81,27 @@ $(document).ready(function () {
 
 })
 
+function excluirBeneficiario(id) {
+    if (confirm("Deseja realmente excluir este beneficiário?")) {
+        $.ajax({
+            url: urlExcluirBeneficiario,
+            method: "POST",
+            data: { id: id },
+            error: function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+            success: function (r) {
+                carregarBeneficiarios(obj.Id);
+                ModalDialog("Sucesso!", r);
+            }
+        });
+    }
+}
+
+
 function carregarBeneficiarios(idCliente) {
     $.ajax({
         url: urlListarBeneficiario,
