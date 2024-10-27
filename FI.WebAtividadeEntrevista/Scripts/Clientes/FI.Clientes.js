@@ -3,7 +3,6 @@ $(document).ready(function () {
 
     $('#CPF').mask('999.999.999-99');
 
-
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
 
@@ -89,12 +88,12 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: '/Beneficiarios/Incluir', // Ajustar depois que eu montar controller
+            url: '/Beneficiarios/Incluir',
             method: "POST",
             data: {
                 "CPF": cpf,
                 "Nome": nome,
-                "IdCliente": idCliente // Substituir com o ID do cliente
+                "IdCliente": idCliente
             },
             success: function (response) {
                 carregarBeneficiarios();

@@ -1,0 +1,7 @@
+﻿CREATE PROCEDURE Beneficiario_Excluir
+    @ID INT
+AS
+BEGIN
+    DELETE FROM BENEFICIARIOS
+    WHERE ID = @ID;
+END;

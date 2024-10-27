@@ -1,0 +1,11 @@
+﻿CREATE PROCEDURE Beneficiario_Incluir
+    @CPF VARCHAR(14),
+    @Nome VARCHAR(255),
+    @IdCliente INT
+AS
+BEGIN
+    INSERT INTO BENEFICIARIOS (CPF, NOME, IDCLIENTE)
+    VALUES (@CPF, @Nome, @IdCliente);
+
+    SELECT SCOPE_IDENTITY()
+END;

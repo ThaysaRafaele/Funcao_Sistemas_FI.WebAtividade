@@ -47,7 +47,75 @@ $(document).ready(function () {
         });
     })
 
+    $('#modalBeneficiarios').on('show.bs.modal', function () {
+        carregarBeneficiarios(obj.Id);
+    });
+
+    $('#formBeneficiarios').submit(function (e) {
+        e.preventDefault();
+
+
+        const dadosBeneficiario = {
+            "CPF": $(this).find("#BeneficiarioCPF").val(),
+            "Nome": $(this).find("#BeneficiarioNome").val(),
+            "IdCliente": obj.Id 
+        };
+
+        $.ajax({
+            url: urlIncluirBeneficiario,
+            method: "POST",
+            data: dadosBeneficiario,
+            error: function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+            success: function (r) {
+                carregarBeneficiarios(obj.Id);
+                $('#formBeneficiarios')[0].reset();
+                ModalDialog("Sucesso!", response);
+            }
+        });
+    });
+
 })
+
+function carregarBeneficiarios(idCliente) {
+    $.ajax({
+        url: urlListarBeneficiario,
+        method: 'GET',
+        data: { idCliente: idCliente },
+        dataType: 'json',
+        success: function (data) {
+            if (data.Result === "OK") {
+                preencherTabelaBeneficiarios(data.Records);
+            } else {
+                alert('Erro ao carregar beneficiários: ' + data.Message);
+            }
+        },
+        error: function (xhr, status, error) {
+            alert('Erro ao carregar beneficiários: ' + error);
+        }
+    });
+}
+
+function preencherTabelaBeneficiarios(beneficiarios) {
+    var tbody = $('#tabelaBeneficiarios');
+    tbody.empty();
+
+    beneficiarios.forEach(function (beneficiario) {
+        var tr = $('<tr>');
+        tr.append($('<td>').text(beneficiario.CPF));
+        tr.append($('<td>').text(beneficiario.Nome));
+        tr.append($('<td>').html(
+            '<button class="btn btn-sm btn-danger" onclick="excluirBeneficiario(' + beneficiario.Id + ')">Excluir</button> ' +
+            '<button class="btn btn-sm btn-primary" onclick="editarBeneficiario(' + beneficiario.Id + ')">Editar</button>'
+        ));
+        tbody.append(tr);
+    });
+}
+
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');
