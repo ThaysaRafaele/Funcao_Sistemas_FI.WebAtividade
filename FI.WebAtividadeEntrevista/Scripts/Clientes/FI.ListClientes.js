@@ -26,7 +26,7 @@ $(document).ready(function () {
                     display: function (data) {
                         return `
                             <button onclick="window.location.href='${urlAlteracao}/${data.record.Id}'" class="btn btn-primary btn-sm">Alterar</button>
-                            <button onclick="excluirCliente(${data.record.Id})" class="btn btn-danger btn-sm">Excluir</button>
+                            <button onclick="excluirCliente(${data.record.Id}, '${data.record.Nome}')" class="btn btn-danger btn-sm">Excluir</button>
                         `;
                     }
                 }
@@ -38,8 +38,8 @@ $(document).ready(function () {
         $('#gridClientes').jtable('load');
 })
 
-function excluirCliente(id) {
-    if (confirm("Tem certeza que deseja excluir este cliente?")) {
+function excluirCliente(id, nome) {
+    if (confirm("Tem certeza que deseja excluir o cliente " + nome +"?")) {
         $.ajax({
             url: urlExclusao,
             type: 'POST',
