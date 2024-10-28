@@ -41,8 +41,6 @@ $(document).ready(function () {
             success:
                 function (r) {
                     ModalDialog("Sucesso!", r)
-                    $("#formCadastro")[0].reset();
-                    window.location.href = urlRetorno;
                 }
         });
     })
@@ -55,19 +53,26 @@ $(document).ready(function () {
         e.preventDefault();
 
         const idBeneficiario = $('#BeneficiarioID').val();
-        const dadosBeneficiario = {
+        const dadosBeneficiarioAlterar = {
             "ID": idBeneficiario,
             "CPF": $(this).find("#BeneficiarioCPF").val(),
             "Nome": $(this).find("#BeneficiarioNome").val(),
             "IdCliente": obj.Id
         };
 
+        const dadosBeneficiarioIncluir = {
+            "CPF": $(this).find("#BeneficiarioCPF").val(),
+            "Nome": $(this).find("#BeneficiarioNome").val(),
+            "IdCliente": obj.Id
+        };
+
         const url = idBeneficiario ? urlAlterarBeneficiario : urlIncluirBeneficiario;
+        const dado = idBeneficiario ? dadosBeneficiarioAlterar : dadosBeneficiarioIncluir;
 
         $.ajax({
             url: url,
             method: "POST",
-            data: dadosBeneficiario,
+            data: dado,
             error: function (r) {
                 if (r.status == 400)
                     ModalDialog("Ocorreu um erro", r.responseJSON);
