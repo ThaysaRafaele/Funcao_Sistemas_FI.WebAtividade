@@ -1,7 +1,11 @@
 ﻿
+var IdCliente;
 $(document).ready(function () {
 
     $('#CPF').mask('999.999.999-99');
+
+
+    $('#formBeneficiarios').find("input, button").prop("disabled", true);
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -27,17 +31,21 @@ $(document).ready(function () {
                 "Telefone": $(this).find("#Telefone").val(),
                 "CPF": $(this).find("#CPF").val()
             },
-            error:
-            function (r) {
+            success: function (response) {
+
+                if (response.ClienteId) {
+                    IdCliente = response.ClienteId;
+                    ModalDialog("Sucesso!", response.Mensagem);
+                    $('#formBeneficiarios').find("input, button").prop("disabled", false);
+                } else {
+                    ModalDialog("Erro", "Não foi possível obter o ID do cliente.");
+                }
+            },
+            error: function (r) {
                 if (r.status == 400)
                     ModalDialog("Ocorreu um erro", r.responseJSON);
                 else if (r.status == 500)
                     ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
-            },
-            success:
-            function (r) {
-                ModalDialog("Sucesso!", r)
-                $("#formCadastro")[0].reset();
             }
         });
     })
@@ -71,11 +79,7 @@ $(document).ready(function () {
         return true;
     }
 
-    // Gerenciando beneficiários
-    $('#modalBeneficiarios').on('show.bs.modal', function () {
-        carregarBeneficiarios();
-    });
-
+    
     $('#formBeneficiarios').submit(function (e) {
         e.preventDefault();
 
@@ -87,17 +91,32 @@ $(document).ready(function () {
             return false;
         }
 
+        const idBeneficiario = $('#BeneficiarioID').val();
+        const dadosBeneficiarioAlterar = {
+            "ID": idBeneficiario,
+            "CPF": $(this).find("#BeneficiarioCPF").val(),
+            "Nome": $(this).find("#BeneficiarioNome").val(),
+            "IdCliente": IdCliente
+        };
+
+        const dadosBeneficiarioIncluir = {
+            "CPF": $(this).find("#BeneficiarioCPF").val(),
+            "Nome": $(this).find("#BeneficiarioNome").val(),
+            "IdCliente": IdCliente
+        };
+
+        const url = idBeneficiario ? urlAlterarBeneficiario : urlIncluirBeneficiario;
+        const dado = idBeneficiario ? dadosBeneficiarioAlterar : dadosBeneficiarioIncluir;
+
         $.ajax({
-            url: '/Beneficiarios/Incluir',
+            url: url,
             method: "POST",
-            data: {
-                "CPF": cpf,
-                "Nome": nome,
-                "IdCliente": idCliente
-            },
+            data: dado,
             success: function (response) {
-                carregarBeneficiarios();
+                carregarBeneficiarios(IdCliente);
                 $('#formBeneficiarios')[0].reset();
+                $('#BeneficiarioID').val("");
+                $('#btnSalvarBeneficiario').text("Incluir");
                 ModalDialog("Sucesso!", response);
             },
             error: function (r) {
@@ -106,52 +125,90 @@ $(document).ready(function () {
         });
     });
 
-    function carregarBeneficiarios() {
-        $.ajax({
-            url: '/Beneficiarios/Listar/' + idCliente, // Ajustar depois que eu montar controller
-            method: "GET",
-            success: function (beneficiarios) {
-                var tabela = $('#tabelaBeneficiarios');
-                tabela.empty();
-
-                beneficiarios.forEach(function (beneficiario) {
-                    tabela.append('<tr>' +
-                        '<td>' + beneficiario.CPF + '</td>' +
-                        '<td>' + beneficiario.Nome + '</td>' +
-                        '<td>' +
-                        '<button class="btn btn-warning btn-sm" onclick="alterarBeneficiario(' + beneficiario.ID + ')">Alterar</button>' +
-                        '<button class="btn btn-danger btn-sm" onclick="excluirBeneficiario(' + beneficiario.ID + ')">Excluir</button>' +
-                        '</td>' +
-                        '</tr>');
-                });
-            },
-            error: function () {
-                ModalDialog("Erro", "Ocorreu um erro ao carregar os beneficiários.");
-            }
-        });
-    }
-
-    function alterarBeneficiario(id) {
-        // Ajustar a lógica para alterar o beneficiário aqui
-       
-    }
-
-    function excluirBeneficiario(id) {
-        $.ajax({
-            url: '/Beneficiarios/Excluir', //Ajustar depois que eu montar controller
-            method: "POST",
-            data: { "id": id },
-            success: function () {
-                carregarBeneficiarios();
-                ModalDialog("Sucesso", "Beneficiário excluído com sucesso.");
-            },
-            error: function () {
-                ModalDialog("Erro", "Ocorreu um erro ao excluir o beneficiário.");
-            }
-        });
-    }
+    
 
 })
+
+function carregarBeneficiarios(idCliente) {
+    $.ajax({
+        url: urlListarBeneficiario,
+        method: 'GET',
+        data: { idCliente: idCliente },
+        dataType: 'json',
+        success: function (data) {
+            if (data.Result === "OK") {
+                preencherTabelaBeneficiarios(data.Records);
+            } else {
+                alert('Erro ao carregar beneficiários: ' + data.Message);
+            }
+        },
+        error: function (xhr, status, error) {
+            alert('Erro ao carregar beneficiários: ' + error);
+        }
+    });
+}
+
+function preencherTabelaBeneficiarios(beneficiarios) {
+    var tbody = $('#tabelaBeneficiarios');
+    tbody.empty();
+
+    beneficiarios.forEach(function (beneficiario) {
+        var tr = $('<tr>');
+        tr.append($('<td>').text(beneficiario.CPF));
+        tr.append($('<td>').text(beneficiario.Nome));
+        tr.append($('<td>').html(
+            '<button class="btn btn-sm btn-danger" onclick="excluirBeneficiario(' + beneficiario.Id + ')">Excluir</button> ' +
+            '<button class="btn btn-sm btn-primary" onclick="editarBeneficiario(' + beneficiario.Id + ')">Alterar</button>'
+        ));
+        tbody.append(tr);
+    });
+}
+
+function editarBeneficiario(id) {
+    $.ajax({
+        url: urlAlterarBeneficiario,
+        method: "GET",
+        data: { id: id },
+        dataType: "json",
+        success: function (data) {
+            if (data) {
+                $('#BeneficiarioID').val(data.ID);
+                $('#BeneficiarioCPF').val(data.CPF);
+                $('#BeneficiarioNome').val(data.Nome);
+
+                $('#btnSalvarBeneficiario').text("Alterar");
+                $('#formBeneficiarios').data("action-url", urlAlterarBeneficiario);
+
+                $('#modalBeneficiarios').modal('show');
+            } else {
+                ModalDialog("Erro", "Beneficiário não encontrado.");
+            }
+        },
+        error: function (xhr, status, error) {
+            ModalDialog("Erro", "Ocorreu um erro ao carregar os dados do beneficiário: " + error);
+        }
+    });
+}
+
+function excluirBeneficiario(id) {
+    if (confirm("Deseja realmente excluir este beneficiário?")) {
+        $.ajax({
+            url: urlExcluirBeneficiario,
+            method: "POST",
+            data: { id: id },
+            error: function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+            success: function (r) {
+                carregarBeneficiarios(IdCliente);
+                ModalDialog("Sucesso!", r);
+            }
+        });
+    }
+}
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');
