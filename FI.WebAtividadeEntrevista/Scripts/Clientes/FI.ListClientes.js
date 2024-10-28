@@ -20,10 +20,14 @@ $(document).ready(function () {
                     title: 'Email',
                     width: '35%'
                 },
-                Alterar: {
-                    title: '',
+                Ações: {  
+                    title: 'Ações', 
+                    width: '15%',
                     display: function (data) {
-                        return '<button onclick="window.location.href=\'' + urlAlteracao + '/' + data.record.Id + '\'" class="btn btn-primary btn-sm">Alterar</button>';
+                        return `
+                            <button onclick="window.location.href='${urlAlteracao}/${data.record.Id}'" class="btn btn-primary btn-sm">Alterar</button>
+                            <button onclick="excluirCliente(${data.record.Id})" class="btn btn-danger btn-sm">Excluir</button>
+                        `;
                     }
                 }
             }
@@ -33,3 +37,21 @@ $(document).ready(function () {
     if (document.getElementById("gridClientes"))
         $('#gridClientes').jtable('load');
 })
+
+function excluirCliente(id) {
+    if (confirm("Tem certeza que deseja excluir este cliente?")) {
+        $.ajax({
+            url: urlExclusao,
+            type: 'POST',
+            data: { id: id },
+            success: function (response) {
+                alert(response);
+                $('#gridClientes').jtable('load');
+            },
+            error: function (r) {
+                alert("Ocorreu um erro ao excluir o cliente: " + r.responseText);
+            }
+        });
+    }
+}
+

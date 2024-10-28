@@ -71,5 +71,12 @@ namespace FI.AtividadeEntrevista.BLL
             List<Beneficiario> beneficiarios = dao.ListarPorCliente(idCliente);
             return beneficiarios.Any(b => b.CPF == cpf);
         }
+
+        public void ExcluirPorCliente(long id)
+        {
+            DaoCliente dao = new DaoCliente();
+            dao.Excluir(id);
+        }
+
     }
 }
